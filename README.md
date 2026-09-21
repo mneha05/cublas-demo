@@ -1,37 +1,45 @@
-cuBLAS Demo — BLAS-level GPU Acceleration
+# CUDA Linear Algebra Bench — cuBLAS + cuDNN
 
-![status](https://img.shields.io/badge/status-scaffold-ready-yellow)
+A compact CUDA benchmarking project that compares hand-written CUDA kernels with NVIDIA library primitives for matrix multiplication and convolution.
 
-Demonstrates how to integrate cuBLAS into C++ projects for high-performance linear algebra. Includes CPU fallback code, build instructions, and notes for performance tuning.
+## What it demonstrates
 
-Highlights
-- CPU fallback with explanatory comments
-- Guidance for integrating cuBLAS functions (saxpy, dot, gemm)
-- CMake build and notes for linking NVIDIA libraries
+- cuBLAS SGEMM with explicit device buffers and CUDA events
+- cuDNN 2D convolution with tensor/filter/convolution descriptors
+- Numerical validation against CPU reference results
+- Repeatable warm-up + timed iterations
+- CMake integration with CUDA, cuBLAS, and cuDNN
+- Jenkins build pipeline for GPU-capable workers
 
-Quickstart
-
-```powershell
-mkdir build && cd build
-cmake .. -DUSE_CUDA=ON
-cmake --build .
-```
-
-Demo GIF placeholder:
-
-![cublas-demo](./assets/cublas_demo.gif)
-
-Mermaid diagram
+## Architecture
 
 ```mermaid
 flowchart LR
-	A[Host arrays] --> B[cuBLAS API]
-	B --> C[Device computation]
-	C --> D[Host results]
+  A[Host tensors] --> B[CUDA malloc/copy]
+  B --> C1[cuBLAS SGEMM]
+  B --> C2[cuDNN Conv2D]
+  C1 --> D[CUDA event timing]
+  C2 --> D
+  D --> E[Copy back]
+  E --> F[CPU reference validation]
 ```
 
-Why this impresses
-- cuBLAS is a core building block for accelerated DL ops; recruiters expect familiarity
+## Build
 
-License: MIT
+```bash
+cmake -S . -B build
+cmake --build build -j
+./build/cuda_linear_bench
+```
 
+## Output
+
+The executable prints measured SGEMM/Conv2D latency and max absolute error. Numbers are measured at runtime; this repository does not claim fabricated benchmark results.
+
+## Resume-safe description
+
+Built a CUDA benchmarking harness using cuBLAS and cuDNN with explicit GPU memory management, CUDA event timing, and numerical validation against CPU references.
+
+## License
+
+MIT
